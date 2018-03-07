@@ -38,6 +38,11 @@
                   <td>Called when one message received.</td>
                   <td>http://localhost:8080/VASMCI/ReceiveMsg</td>
                 </tr>
+                <tr>
+                  <td>Notification</td>
+                  <td>Called when users subscribe or un-subscribe</td>
+                  <td>http://localhost:8080/VASMCI/Notification</td>
+                </tr>
               </tbody>
             </table>
          </div>

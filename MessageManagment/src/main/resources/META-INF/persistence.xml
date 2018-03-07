@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="com.mycompany_MessageManagment_war_1.0-SNAPSHOTPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>com.fidar.hibernate.entity.TblServiceusers</class>
+    <class>com.fidar.hibernate.entity.TblOtpRequest</class>
+    <class>com.fidar.hibernate.entity.TblServices</class>
+    <class>com.fidar.hibernate.entity.TblOtpLog</class>
+    <class>com.fidar.hibernate.entity.TblMoMtLog</class>
+    <class>com.fidar.hibernate.entity.TblChargeOtpLog</class>
+    <class>com.fidar.hibernate.entity.TblReceiveMsg</class>
+    <class>com.fidar.hibernate.entity.TblUser</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/mci_hub_db?zeroDateTimeBehavior=convertToNull"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.password" value=""/>
+    </properties>
+  </persistence-unit>
+</persistence>

@@ -13,6 +13,16 @@ public class SubUserObject {
     private final int serviceCode;
     private final ReceiveMsgObject receiveMsgObject;
 
+    public SubUserObject(int serviceCode, NotificationObject notificationObject) {
+        this.serviceCode = serviceCode;
+        this.receiveMsgObject = new ReceiveMsgObject(
+                notificationObject.getText(), 
+                notificationObject.getFrom(),
+                notificationObject.getTo(), 
+                notificationObject.getNotificationId(),
+                notificationObject.getUserId());
+    }
+    
     public SubUserObject(int serviceCode, ReceiveMsgObject receiveMsgObject) {
         this.serviceCode = serviceCode;
         this.receiveMsgObject = receiveMsgObject;

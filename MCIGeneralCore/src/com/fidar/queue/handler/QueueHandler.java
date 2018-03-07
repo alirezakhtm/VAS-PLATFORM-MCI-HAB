@@ -6,6 +6,7 @@
 package com.fidar.queue.handler;
 
 import com.fidar.json.handler.JsonHandler;
+import com.fidar.queue.object.NotificationObject;
 import com.fidar.queue.object.OTPObject;
 import com.fidar.queue.object.ReceiveMsgObject;
 import com.fidar.queue.object.SMSObject;
@@ -42,11 +43,17 @@ public class QueueHandler {
     public static final String Q_PushOTPResponse = "Q-PushOTPResponse";
     public static final String Q_OTHER_MSG = "Q-OtherMsg";
     public static final String Q_OTP_BUFFER = "Q-OTPBuffer";
+    public static final String Q_Notification = "Q-Notification";
 
     public QueueHandler() {
         if(jHandler == null) jHandler = new JsonHandler();
         QueueHandler.userName = jHandler.getActiveMQUsername();
         QueueHandler.password = jHandler.getActiveMQPassword();
+    }
+    
+    public void InsertToNotificationQueue(NotificationObject no){
+        String strJson = getJsonObject(no);
+        saveTextToQueue(strJson, Q_Notification, "QueueHandler - InsertToNotificationQueue : ");
     }
     
     public void InsertToOTPQueue(OTPObject otpo){

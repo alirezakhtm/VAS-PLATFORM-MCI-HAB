@@ -10,6 +10,7 @@ import com.fidar.database.object.MOMTLogObject;
 import com.fidar.database.object.OTPLogObject;
 import com.fidar.json.handler.JsonHandler;
 import com.fidar.queue.handler.QueueHandler;
+import com.fidar.queue.object.NotificationObject;
 import com.fidar.queue.object.OTPObject;
 import com.fidar.queue.object.ReceiveMsgObject;
 import com.fidar.queue.object.SubUserObject;
@@ -178,7 +179,8 @@ public class LogicApp {
                                         " OTP ID : " + otpo.getOtpId() +
                                         " Recipient : " + otpo.getRecipient() +
                                         " Status ID : " + otpo.getStatusId());
-                                qHandler.InsertToOTPBufferQueue(otpo);
+                                //disable this code because Consumer OTP Rsp have been disabled.
+                                //qHandler.InsertToOTPBufferQueue(otpo); 
                                 db.open();
                                 db.saveOTPLog(
                                         new OTPLogObject(
@@ -199,12 +201,66 @@ public class LogicApp {
                 }
             }
             executorService_OTP.shutdown();
-            connection_OTP.close();
+            consumer_OTP.close();
             session_OTP.close();
             connection_OTP.close();
+            // start proccess for Notification queue
+            Connection connection_notification = connectionFactory.createConnection();
+            connection_notification.start();
+            Session session_notification = connection_notification.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Destination destination_notification = session_notification.createQueue(QueueHandler.Q_Notification);
+            MessageConsumer consumer_notification = session_notification.createConsumer(destination_notification);
+            ExecutorService executorService_notification = Executors.newFixedThreadPool(50);
+            while(true){
+                Message message_notification = consumer_notification.receive(TIME_OUT);
+                if(message_notification != null){
+                    if(message_notification instanceof TextMessage){
+                        String strJson = ((TextMessage) message_notification).getText();
+                        Gson gson = new GsonBuilder().create();
+                        NotificationObject notificationObject = gson.fromJson(strJson, NotificationObject.class);
+                        Thread th_Notification = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                db.open();
+                                int iServiceCode = db.getServiceCode(notificationObject);
+                                db.close();
+                                System.out.println("[*] " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").
+                                        format(Calendar.getInstance().getTime()) +
+                                        " ServiceCode : " + iServiceCode +
+                                        " ReceMsg : " + notificationObject.getText() +
+                                        " From : " + notificationObject.getFrom());
+                                if(iServiceCode != 0){
+                                    switch(notificationObject.getText()){
+                                        case TXT_SUB:
+                                            // put data on Q-SubUser
+                                            qHandler.InsertToSubUserQueue(new SubUserObject(iServiceCode, notificationObject));
+                                            break;
+                                        case TXT_UNSUB:
+                                            // put data on Q-UnSubUser
+                                            qHandler.InsertUnSubUserQueue(new UnSubUserObject(iServiceCode, notificationObject));
+                                            break;
+                                    }
+                                }
+                                // save data on tbl_notification_log
+                                db.open();
+                                db.saveNotificationLog(notificationObject);
+                                db.close();
+                            }
+                        });
+                        executorService_notification.execute(th_Notification);
+                    }
+                }else{
+                    break;
+                }
+            }
+            executorService_notification.shutdown();
+            consumer_notification.close();
+            session_notification.close();
+            connection_notification.close();
             // wait untile all threads job done! 
             while(!executorService_receivedMsg.isTerminated()){}
             while(!executorService_OTP.isTerminated()){}
+            while(!executorService_notification.isTerminated()){}
         }catch(JMSException e){
             System.err.println("LogicApp - DoProccess : " + e);
         }

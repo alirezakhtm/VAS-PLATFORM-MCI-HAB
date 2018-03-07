@@ -13,6 +13,7 @@ import com.fidar.database.object.ReceiveMsgObject;
 import com.fidar.database.object.ServicesObject;
 import com.fidar.database.object.ServicesUser;
 import com.fidar.json.handler.JsonHandler;
+import com.fidar.queue.object.NotificationObject;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -167,6 +168,24 @@ public class DatabaseHandler {
             String shortCode = receiveMsgObject.getTo().startsWith("98") ?
                     receiveMsgObject.getTo().substring(2) : 
                     receiveMsgObject.getTo();
+            String query = "SELECT `ServiceCode` FROM `mci_hub_db`.`tbl_services` "
+                    + "WHERE `ShortCode` = '"+shortCode+"'";
+            stm = conn.createStatement();
+            rst = stm.executeQuery(query);
+            rst.next();
+            serviceCode = Integer.parseInt(rst.getString("ServiceCode"));
+        }catch(SQLException e){
+            System.err.println("DatabaseHandler - getServiceCode : " + e);
+        }
+        return serviceCode;
+    }
+    
+    public int getServiceCode(NotificationObject notificationObject){
+        int serviceCode = 0;
+        try{
+            String shortCode = notificationObject.getTo().startsWith("98") ?
+                    notificationObject.getTo().substring(2) : 
+                    notificationObject.getTo();
             String query = "SELECT `ServiceCode` FROM `mci_hub_db`.`tbl_services` "
                     + "WHERE `ShortCode` = '"+shortCode+"'";
             stm = conn.createStatement();
@@ -451,6 +470,36 @@ public class DatabaseHandler {
             stm.execute(query);
         }catch(SQLException e){
             System.err.println("DatabaseHandler - saveChargeOTP : " + e);
+        }
+    }
+    
+    /***************************************************************************
+     *                      Table of tbl_notification_db                       *
+     ***************************************************************************/
+    public void saveNotificationLog(NotificationObject notificationObject){
+        try{
+            String query =  "INSERT INTO `mci_hub_db`.`tbl_notification_log`\n" +
+                            "(`text`,\n" +
+                            "`keyword`,\n" +
+                            "`channel`,\n" +
+                            "`from`,\n" +
+                            "`to`,\n" +
+                            "`notificationId`,\n" +
+                            "`userId`,\n" +
+                            "`receiveDate`)\n" +
+                            "VALUES\n" +
+                            "('"+notificationObject.getText()+"',\n" +
+                            "'"+notificationObject.getKeyword()+"',\n" +
+                            "'"+notificationObject.getChannel()+"',\n" +
+                            "'"+notificationObject.getFrom()+"',\n" +
+                            "'"+notificationObject.getTo()+"',\n" +
+                            "'"+notificationObject.getNotificationId()+"',\n" +
+                            "'"+notificationObject.getUserId()+"',\n" +
+                            "'"+notificationObject.getDateTime()+"')";
+            stm = conn.createStatement();
+            stm.execute(query);
+        }catch(SQLException e){
+            System.err.println("DatabaseHandler - saveNotificationLog : " + e);
         }
     }
 }
