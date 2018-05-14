@@ -230,7 +230,7 @@ public class LogicApp {
                                         " ReceMsg : " + notificationObject.getText() +
                                         " From : " + notificationObject.getFrom());
                                 if(iServiceCode != 0){
-                                    switch(notificationObject.getText()){
+                                    switch(notificationObject.getText().toLowerCase()){
                                         case TXT_SUB:
                                             // put data on Q-SubUser
                                             qHandler.InsertToSubUserQueue(new SubUserObject(iServiceCode, notificationObject));
