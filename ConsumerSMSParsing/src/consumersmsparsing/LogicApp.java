@@ -81,7 +81,7 @@ public class LogicApp {
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination = session.createQueue(QueueHandler.Q_SMS);
             MessageConsumer consumer = session.createConsumer(destination);
-            ExecutorService executorService = Executors.newFixedThreadPool(50);
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
             while(true){
                 Message message = consumer.receive(TIME_OUT);
                 if(message != null){
@@ -98,6 +98,8 @@ public class LogicApp {
                                 // read shortcode from database by service code
                                 db.open();
                                 String shortCode = db.getShortCode(smso.getSerivceCode());
+                                db.close();
+                                db.open();
                                 String strServiceId = db.getServiceId(Integer.parseInt(smso.getSerivceCode()));
                                 db.close();
                                 String msisdn_edited = "";

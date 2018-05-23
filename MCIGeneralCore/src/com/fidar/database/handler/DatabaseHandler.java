@@ -319,14 +319,16 @@ public class DatabaseHandler {
             String query_update_sub = "UPDATE `mci_hub_db`.`tbl_serviceusers`\n" +
                             "SET\n" +
                             "`SubStatus` = '"+servicesUser.getSubstatus()+"',\n" +
-                            "`MembershipDate` = '"+servicesUser.getMembershipDate()+"',\n" +
-                            "WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser.getMsisdn()+"'";
+                            "`MembershipDate` = '"+servicesUser.getMembershipDate()+"'\n" +
+                            " WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser.getMsisdn()+"'";
             String query_update_unsub = "UPDATE `mci_hub_db`.`tbl_serviceusers`\n" +
                             "SET\n" +
                             "`SubStatus` = '"+servicesUser.getSubstatus()+"',\n" +
-                            "`UnSubscribeDate` = '"+servicesUser.getUnsubscribeDate()+"',\n" +
-                            "WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser+"'";
+                            "`UnSubscribeDate` = '"+servicesUser.getUnsubscribeDate()+"'\n" +
+                            " WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser+"'";
             boolean bExistUser = this.isExistUserOnService(servicesUser.getServiceCode(), servicesUser.getMsisdn());
+            this.close();
+            this.open();
             String query = "";
             if(servicesUser.getSubstatus() == 1){
                 if(bExistUser){

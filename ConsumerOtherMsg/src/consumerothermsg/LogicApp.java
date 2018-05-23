@@ -79,7 +79,7 @@ public class LogicApp {
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination = session.createQueue(QueueHandler.Q_OTHER_MSG);
             MessageConsumer consumer = session.createConsumer(destination);
-            ExecutorService executorService = Executors.newFixedThreadPool(50);
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
             while(true){
                 Message message = consumer.receive(TIME_OUT);
                 if(message != null){

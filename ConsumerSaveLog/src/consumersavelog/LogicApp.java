@@ -84,7 +84,7 @@ public class LogicApp {
             Session session_ReceivedMsg = connection_ReceivedMsg.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination_ReceiveMsg = session_ReceivedMsg.createQueue(QueueHandler.Q_ReceiveMsg);
             MessageConsumer consumer_ReceiveMsg = session_ReceivedMsg.createConsumer(destination_ReceiveMsg);
-            ExecutorService executorService_receivedMsg = Executors.newFixedThreadPool(50);
+            ExecutorService executorService_receivedMsg = Executors.newFixedThreadPool(1);
             while(true){
                 Message message_ReceiveMsg = consumer_ReceiveMsg.receive(TIME_OUT);
                 if(message_ReceiveMsg != null){
@@ -132,6 +132,8 @@ public class LogicApp {
                                         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").
                                                 format(Calendar.getInstance().getTime()))
                                 );
+                                db.close();
+                                db.open();
                                 // save data on tbl_receive_msg
                                 db.saveReceiveSMS(
                                         new com.fidar.database.object.ReceiveMsgObject(
@@ -161,7 +163,7 @@ public class LogicApp {
             Session session_OTP = connection_OTP.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination_OTP = session_OTP.createQueue(QueueHandler.Q_OTP);
             MessageConsumer consumer_OTP = session_OTP.createConsumer(destination_OTP);
-            ExecutorService executorService_OTP = Executors.newFixedThreadPool(50);
+            ExecutorService executorService_OTP = Executors.newFixedThreadPool(1);
             while(true){
                 Message message_OTP = consumer_OTP.receive(TIME_OUT);
                 if(message_OTP != null){
@@ -210,7 +212,7 @@ public class LogicApp {
             Session session_notification = connection_notification.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination_notification = session_notification.createQueue(QueueHandler.Q_Notification);
             MessageConsumer consumer_notification = session_notification.createConsumer(destination_notification);
-            ExecutorService executorService_notification = Executors.newFixedThreadPool(50);
+            ExecutorService executorService_notification = Executors.newFixedThreadPool(1);
             while(true){
                 Message message_notification = consumer_notification.receive(TIME_OUT);
                 if(message_notification != null){
