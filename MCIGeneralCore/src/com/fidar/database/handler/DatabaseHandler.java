@@ -325,7 +325,7 @@ public class DatabaseHandler {
                             "SET\n" +
                             "`SubStatus` = '"+servicesUser.getSubstatus()+"',\n" +
                             "`UnSubscribeDate` = '"+servicesUser.getUnsubscribeDate()+"'\n" +
-                            " WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser+"'";
+                            " WHERE `ServiceCode` = '"+servicesUser.getServiceCode()+"' and `MSISDN` = '"+servicesUser.getMsisdn()+"'";
             boolean bExistUser = this.isExistUserOnService(servicesUser.getServiceCode(), servicesUser.getMsisdn());
             this.close();
             this.open();
