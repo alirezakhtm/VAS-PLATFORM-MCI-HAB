@@ -145,7 +145,7 @@ public class LogicApp {
                                             db.close();
                                             String strMsgReward = "";
                                             if(!userGetRewardInPast){
-                                                if(invitedNumber_getReward == 0){
+                                                if(invitedNumber_getReward == 0 || invitedNumber_getReward < 2){
                                                     strMsgReward = 
                                                             "تا کنون کاربری توسط کد اختصاصی شما در سرویس ثبت نام نکرده است.\n" +
                                                             "شما می توانید"
@@ -154,6 +154,16 @@ public class LogicApp {
                                                             "10 نفر بعدی: 3 گیگ اینترنت \n" +
                                                             "20 نفر بعدی: 5 گیگ اینترنت\n" +
                                                             "25 نفر بعدی: 7 گیگ اینترنت";
+                                                    if(invitedNumber_getReward < 2){
+                                                        strMsgReward = 
+                                                                "تعداد کاربران معرفی شده توسط شما به تعداد معین نرسیده است.\n" +
+                                                            "شما می توانید"
+                                                            + " با دعوت از دوستان خود تا هزار تومان شارژ رایگان و تا 15 گیگ اینترنت دریافت کنید. دعوت از:\n" +
+                                                            "دو نفر اول: 1000 تومان شارژ\n" +
+                                                            "10 نفر بعدی: 3 گیگ اینترنت \n" +
+                                                            "20 نفر بعدی: 5 گیگ اینترنت\n" +
+                                                            "25 نفر بعدی: 7 گیگ اینترنت";
+                                                    }
                                                     qHandler.InsertToSMSQueue(new SMSObject(
                                                                     iServiceCode+"",
                                                                     rmo.getFrom(),
