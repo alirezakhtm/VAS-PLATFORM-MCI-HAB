@@ -106,13 +106,25 @@ public class LogicApp {
                                                 1                                               // subscribe user
                                 ));
                                 db.close();
+                                db.open();
+                                int uniqueCode = db.getUniqueCodeForUser(
+                                        subUserObject.getReceiveMsgObject().getFrom(),
+                                        subUserObject.getServiceCode()
+                                );
+                                db.close();
+                                welcomeMT = welcomeMT.replace("::uniqueCode::", uniqueCode+"");
                                 QHandler.InsertToSMSQueue(new SMSObject(
                                                 subUserObject.getServiceCode()+"",
                                                 subUserObject.getReceiveMsgObject().getFrom(),
                                                 welcomeMT)
                                 );
                                 
-                                
+                                // update table of unique code if this user existed
+                                db.open();
+                                db.updateInvitedTableForThisUser(
+                                        subUserObject.getReceiveMsgObject().getFrom(),
+                                        subUserObject.getServiceCode()+"");
+                                db.close();
                                 
                                 /*
                                 // call web service for subscribe user

@@ -13,10 +13,14 @@ import com.fidar.queue.handler.QueueHandler;
 import com.fidar.queue.object.NotificationObject;
 import com.fidar.queue.object.OTPObject;
 import com.fidar.queue.object.ReceiveMsgObject;
+import com.fidar.queue.object.SMSObject;
 import com.fidar.queue.object.SubUserObject;
 import com.fidar.queue.object.UnSubUserObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
@@ -43,6 +47,8 @@ public class LogicApp {
     private static final Integer TIME_OUT = 2000;
     private final String TXT_SUB = "subscription";
     private final String TXT_UNSUB = "unsubscription";
+    private final String TXT_GET_INVITED_NUMBER = "f";
+    private final String TXT_GET_REWARD = "g";
     
     private final QueueHandler qHandler = new QueueHandler();
     private final DatabaseHandler db = new DatabaseHandler();
@@ -116,9 +122,217 @@ public class LogicApp {
                                             // put data on Q-UnSubUser
                                             qHandler.InsertUnSubUserQueue(new UnSubUserObject(iServiceCode, rmo));
                                             break;
+                                        case TXT_GET_INVITED_NUMBER:
+                                            db.open();
+                                            int invitedNumber = 
+                                                    db.getInvitedNumberByUser(rmo.getFrom(), iServiceCode);
+                                            db.close();
+                                            String msg_invitedNumber =
+                                                    "افراد دعوت شده از طرف شما " + invitedNumber + " نفر می باشند.";
+                                            qHandler.InsertToSMSQueue(new SMSObject(
+                                                            iServiceCode+"",
+                                                            rmo.getFrom(),
+                                                            msg_invitedNumber)
+                                            );
+                                            break;
+                                        case TXT_GET_REWARD:
+                                            db.open();
+                                            int invitedNumber_getReward = 
+                                                    db.getInvitedNumberByUser(rmo.getFrom(), iServiceCode);
+                                            db.close();
+                                            db.open();
+                                            boolean userGetRewardInPast = db.isUserGetRewardInPast(rmo.getFrom(), iServiceCode);
+                                            db.close();
+                                            String strMsgReward = "";
+                                            if(!userGetRewardInPast){
+                                                if(invitedNumber_getReward == 0){
+                                                    strMsgReward = 
+                                                            "تا کنون کاربری توسط کد اختصاصی شما در سرویس ثبت نام نکرده است.\n" +
+                                                            "شما می توانید"
+                                                            + " با دعوت از دوستان خود تا هزار تومان شارژ رایگان و تا 15 گیگ اینترنت دریافت کنید. دعوت از:\n" +
+                                                            "دو نفر اول: 1000 تومان شارژ\n" +
+                                                            "10 نفر بعدی: 3 گیگ اینترنت \n" +
+                                                            "20 نفر بعدی: 5 گیگ اینترنت\n" +
+                                                            "25 نفر بعدی: 7 گیگ اینترنت";
+                                                    qHandler.InsertToSMSQueue(new SMSObject(
+                                                                    iServiceCode+"",
+                                                                    rmo.getFrom(),
+                                                                    strMsgReward)
+                                                    );
+                                                }else{
+                                                    String ansReward = "";
+                                                    String msgReward = "جایزه شما ::tittle::\n" +
+                                                            "::code::";
+                                                    if(invitedNumber_getReward >= 2 && invitedNumber_getReward < 10){
+                                                        // 1000 Toman Charge
+                                                        db.open();
+                                                        ansReward = db.getRewardForThisUser(rmo.getFrom(), "chrg1000", iServiceCode);
+                                                        db.close();
+                                                        switch(ansReward){
+                                                            case "NOTHING":
+                                                                msgReward = "با عرض پوزش کدشارژ جایزه مربوط به شما تمام شده است"
+                                                                        + ". لطفا چند ساعت بعد مجددا تلاش نمایید.";
+                                                                break;
+                                                            case "48HOUR":
+                                                                msgReward = "برای دریافت جایزه باید ۴۸ ساعت از عضویت شما در سرویس گذشته باشد.";
+                                                                break;
+                                                            case "ERROR":
+                                                                msgReward = "خطایی در سیستم رخ داده است. لطفا مجددا تلاش نمایید.";
+                                                                break;
+                                                            default:
+                                                                msgReward = msgReward
+                                                                        .replace("::tittle::", "۱۰۰۰ تومان شارژ همراه اول")
+                                                                        .replace("::code::", ansReward);
+                                                                break;
+                                                        }
+                                                        qHandler.InsertToSMSQueue(new SMSObject(
+                                                                        iServiceCode+"",
+                                                                        rmo.getFrom(),
+                                                                        msgReward)
+                                                        );
+                                                    }else{
+                                                        if(invitedNumber_getReward >= 10 && invitedNumber_getReward < 20){
+                                                            // 3G internet
+                                                            db.open();
+                                                            ansReward = db.getRewardForThisUser(rmo.getFrom(), "int3g", iServiceCode);
+                                                            db.close();
+                                                            switch(ansReward){
+                                                                case "NOTHING":
+                                                                    msgReward = "با عرض پوزش کدشارژ جایزه مربوط به شما تمام شده است"
+                                                                            + ". لطفا چند ساعت بعد مجددا تلاش نمایید.";
+                                                                    break;
+                                                                case "48HOUR":
+                                                                    msgReward = "برای دریافت جایزه باید ۴۸ ساعت از عضویت شما در سرویس گذشته باشد.";
+                                                                    break;
+                                                                case "ERROR":
+                                                                    msgReward = "خطایی در سیستم رخ داده است. لطفا مجددا تلاش نمایید.";
+                                                                    break;
+                                                                default:
+                                                                    msgReward = msgReward
+                                                                            .replace("::tittle::", "۳ گیگ اینترنت")
+                                                                            .replace("::code::", ansReward);
+                                                                    break;
+                                                            }
+                                                            qHandler.InsertToSMSQueue(new SMSObject(
+                                                                            iServiceCode+"",
+                                                                            rmo.getFrom(),
+                                                                            msgReward)
+                                                            );
+
+                                                        }else{
+                                                            if(invitedNumber_getReward >= 20 && invitedNumber_getReward < 25){
+                                                                // 5G internet
+                                                                db.open();
+                                                                ansReward = db.getRewardForThisUser(rmo.getFrom(), "int5g", iServiceCode);
+                                                                db.close();
+                                                                switch(ansReward){
+                                                                    case "NOTHING":
+                                                                        msgReward = "با عرض پوزش کدشارژ جایزه مربوط به شما تمام شده است"
+                                                                                + ". لطفا چند ساعت بعد مجددا تلاش نمایید.";
+                                                                        break;
+                                                                    case "48HOUR":
+                                                                        msgReward = "برای دریافت جایزه باید ۴۸ ساعت از عضویت شما در سرویس گذشته باشد.";
+                                                                        break;
+                                                                    case "ERROR":
+                                                                        msgReward = "خطایی در سیستم رخ داده است. لطفا مجددا تلاش نمایید.";
+                                                                        break;
+                                                                    default:
+                                                                        msgReward = msgReward
+                                                                                .replace("::tittle::", "۵ گیگ اینترنت")
+                                                                                .replace("::code::", ansReward);
+                                                                        break;
+                                                                }
+                                                                qHandler.InsertToSMSQueue(new SMSObject(
+                                                                                iServiceCode+"",
+                                                                                rmo.getFrom(),
+                                                                                msgReward)
+                                                                );
+                                                            }else{
+                                                                if(invitedNumber_getReward >= 25){
+                                                                    // 7G internet
+                                                                    db.open();
+                                                                    ansReward = db.getRewardForThisUser(rmo.getFrom(), "int7g", iServiceCode);
+                                                                    db.close();
+                                                                    switch(ansReward){
+                                                                        case "NOTHING":
+                                                                            msgReward = "با عرض پوزش کدشارژ جایزه مربوط به شما تمام شده است"
+                                                                                    + ". لطفا چند ساعت بعد مجددا تلاش نمایید.";
+                                                                            break;
+                                                                        case "48HOUR":
+                                                                            msgReward = "برای دریافت جایزه باید ۴۸ ساعت از عضویت شما در سرویس گذشته باشد.";
+                                                                            break;
+                                                                        case "ERROR":
+                                                                            msgReward = "خطایی در سیستم رخ داده است. لطفا مجددا تلاش نمایید.";
+                                                                            break;
+                                                                        default:
+                                                                            msgReward = msgReward
+                                                                                    .replace("::tittle::", "۷ گیگ اینترنت")
+                                                                                    .replace("::code::", ansReward);
+                                                                            break;
+                                                                    }
+                                                                    qHandler.InsertToSMSQueue(new SMSObject(
+                                                                                    iServiceCode+"",
+                                                                                    rmo.getFrom(),
+                                                                                    msgReward)
+                                                                    );
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }else{
+                                                strMsgReward = "شما قبلا جایزه خود را دریافت کرده اید.";
+                                                qHandler.InsertToSMSQueue(new SMSObject(
+                                                                iServiceCode+"",
+                                                                rmo.getFrom(),
+                                                                strMsgReward)
+                                                );
+                                            }
+                                            break;
                                         default:
-                                            // put data on Q-OtherMsg
-                                            qHandler.InsertToOtherMsgQueue(rmo);
+                                            try{
+                                                int code = Integer.parseInt(strTxtMsg);
+                                                db.open();
+                                                boolean isValidCode = db.isUniqueCodeValid(strTxtMsg);
+                                                db.close();
+                                                if(isValidCode){
+                                                    db.open();
+                                                    boolean savedOnUniqueCode = db.saveInvitedCodeForUser(
+                                                            rmo.getFrom(), rmo.getTo(), strTxtMsg);
+                                                    db.close();
+                                                    if(savedOnUniqueCode){
+                                                        // send otp for user
+                                                        db.open();
+                                                        int serviceCode = db.getServiceCode(rmo.getTo());
+                                                        db.close();
+                                                        String strUrl = "http://79.175.133.166:8080/MobileApp/pushotp?"
+                                                                + "token=FIDAR123MLmkOsKKMc786231QweXjzPPLLARKHTM&msisdn=" + rmo.getFrom()
+                                                                + "&shortcode=" + rmo.getTo()
+                                                                + "&status=subscription"
+                                                                + "&servicecode=" + serviceCode;
+                                                        URL url = new URL(strUrl);
+                                                        try{
+                                                            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+                                                            connection.setRequestMethod("GET");
+                                                            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+                                                            int responseCode = connection.getResponseCode();
+                                                            System.out.println("[*] " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                                                    .format(Calendar.getInstance().getTime()) + " - ["+rmo.getFrom()+"] - response code: " + responseCode);
+                                                        }catch(IOException e){
+                                                            System.err.println("ConsumerSaveLog - LogicApp - code 01 : " + e);
+                                                        }
+                                                    }else{
+                                                        // put data on Q-OtherMsg
+                                                        qHandler.InsertToOtherMsgQueue(rmo);
+                                                    }
+                                                }else{
+                                                    // put data on Q-OtherMsg
+                                                    qHandler.InsertToOtherMsgQueue(rmo);
+                                                }
+                                            }catch(Exception e){
+                                                // put data on Q-OtherMsg
+                                                qHandler.InsertToOtherMsgQueue(rmo);
+                                            }
                                             break;
                                     }
                                 }
