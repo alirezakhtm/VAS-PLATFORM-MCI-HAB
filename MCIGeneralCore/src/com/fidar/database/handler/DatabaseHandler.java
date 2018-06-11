@@ -468,6 +468,44 @@ public class DatabaseHandler {
         return otpro;
     }
     
+    public List<OTPReqObject> getAllOTPReuest(String msisdn, int serviceCode, String date){
+        List<OTPReqObject> lst = new ArrayList<>();
+        try{
+            String query = "select * from `mci_hub_db`.`tbl_otp_request` where `requestDate` like '%"+date+"%'"
+                    + " and `msisdn` like '%"+msisdn+"%' and `serviceCode` = '"+serviceCode+"' order by `indx` DESC";
+            stm = conn.createStatement();
+            rst = stm.executeQuery(query);
+            while(rst.next()){
+                OTPReqObject otpro = new OTPReqObject(
+                        rst.getString("msisdn"),
+                        rst.getString("shortCode"),
+                        rst.getString("status"),
+                        rst.getString("serviceCode"),
+                        rst.getString("requestDate"),
+                        rst.getString("otpId"));
+                lst.add(otpro);
+            }
+        }catch(SQLException e){
+            System.err.println("DatabaseHandler - getAllOTPReuest : " + e);
+        }
+        return lst;
+    }
+    
+    public int getNumOTPRequest(String msisdn, int serviceCode, String date){
+        int ans = 0;
+        try{
+            String query = "select count(*) from `mci_hub_db`.`tbl_otp_request` where `requestDate` like '%"+date+"%'"
+                    + " and `msisdn` like '%"+msisdn+"%' and `serviceCode` = '"+serviceCode+"' order by `indx` DESC";
+            stm = conn.createStatement();
+            rst = stm.executeQuery(query);
+            rst.next();
+            ans = rst.getInt(1);
+        }catch(SQLException e){
+            System.err.println("DatabaseHandler - getNumOTPRequest : " + e);
+        }
+        return ans;
+    }
+    
     /***************************************************************************
      *                          Charge OTP Log                                 *
      ***************************************************************************/

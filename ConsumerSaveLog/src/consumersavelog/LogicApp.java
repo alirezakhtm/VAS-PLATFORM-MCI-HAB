@@ -8,6 +8,7 @@ package consumersavelog;
 import com.fidar.database.handler.DatabaseHandler;
 import com.fidar.database.object.MOMTLogObject;
 import com.fidar.database.object.OTPLogObject;
+import com.fidar.database.object.OTPReqObject;
 import com.fidar.json.handler.JsonHandler;
 import com.fidar.queue.handler.QueueHandler;
 import com.fidar.queue.object.NotificationObject;
@@ -23,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -302,24 +304,66 @@ public class LogicApp {
                                         default:
                                             try{
                                                 int code = Integer.parseInt(strTxtMsg);
+                                                boolean isOTPCode = false;
                                                 db.open();
-                                                boolean isValidCode = db.isUniqueCodeValid(strTxtMsg);
+                                                isOTPCode = db.getNumOTPRequest(
+                                                        rmo.getFrom(),
+                                                        iServiceCode,
+                                                        new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime())) > 0;
                                                 db.close();
-                                                if(isValidCode){
+                                                if(!isOTPCode){
                                                     db.open();
-                                                    boolean savedOnUniqueCode = db.saveInvitedCodeForUser(
-                                                            rmo.getFrom(), rmo.getTo(), strTxtMsg);
+                                                    boolean isValidCode = db.isUniqueCodeValid(strTxtMsg);
                                                     db.close();
-                                                    if(savedOnUniqueCode){
-                                                        // send otp for user
+                                                    if(isValidCode){
                                                         db.open();
-                                                        int serviceCode = db.getServiceCode(rmo.getTo());
+                                                        boolean savedOnUniqueCode = db.saveInvitedCodeForUser(
+                                                                rmo.getFrom(), rmo.getTo(), strTxtMsg);
                                                         db.close();
-                                                        String strUrl = "http://79.175.133.166:8080/MobileApp/pushotp?"
-                                                                + "token=FIDAR123MLmkOsKKMc786231QweXjzPPLLARKHTM&msisdn=" + rmo.getFrom()
+                                                        if(savedOnUniqueCode){
+                                                            // send otp for user
+                                                            db.open();
+                                                            int serviceCode = db.getServiceCode(rmo.getTo());
+                                                            db.close();
+                                                            String strUrl = "http://79.175.133.166:8080/MobileApp/pushotp?"
+                                                                    + "token=FIDAR123MLmkOsKKMc786231QweXjzPPLLARKHTM&msisdn=" + rmo.getFrom()
+                                                                    + "&shortcode=" + rmo.getTo()
+                                                                    + "&status=subscription"
+                                                                    + "&servicecode=" + serviceCode;
+                                                            URL url = new URL(strUrl);
+                                                            try{
+                                                                HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+                                                                connection.setRequestMethod("GET");
+                                                                connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+                                                                int responseCode = connection.getResponseCode();
+                                                                System.out.println("[*] " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                                                        .format(Calendar.getInstance().getTime()) + " - ["+rmo.getFrom()+"] - response code: " + responseCode);
+                                                            }catch(IOException e){
+                                                                System.err.println("ConsumerSaveLog - LogicApp - code 01 : " + e);
+                                                            }
+                                                        }else{
+                                                            // put data on Q-OtherMsg
+                                                            qHandler.InsertToOtherMsgQueue(rmo);
+                                                        }
+                                                    }else{
+                                                        // put data on Q-OtherMsg
+                                                        qHandler.InsertToOtherMsgQueue(rmo);
+                                                    }
+                                                }else{
+                                                    db.open();
+                                                    List<OTPReqObject> lstOTP = db.getAllOTPReuest(
+                                                            rmo.getFrom(),
+                                                            iServiceCode,
+                                                            new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime()));
+                                                    db.close();
+                                                    for(OTPReqObject otpro : lstOTP){
+                                                        String strUrl = "http://79.175.133.166:8080/MobileApp/chargeotp?"
+                                                                + "token=FIDAR123MLmkOsKKMc786231QweXjzPPLLARKHTM"
+                                                                + "&msisdn=" + rmo.getFrom()
                                                                 + "&shortcode=" + rmo.getTo()
-                                                                + "&status=subscription"
-                                                                + "&servicecode=" + serviceCode;
+                                                                + "&servicecode=" + iServiceCode
+                                                                + "&pin=" + code
+                                                                + "&otpid=" + otpro.getOtpId();
                                                         URL url = new URL(strUrl);
                                                         try{
                                                             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -327,17 +371,11 @@ public class LogicApp {
                                                             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                                                             int responseCode = connection.getResponseCode();
                                                             System.out.println("[*] " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                                                                    .format(Calendar.getInstance().getTime()) + " - ["+rmo.getFrom()+"] - response code: " + responseCode);
+                                                                    .format(Calendar.getInstance().getTime()) + " - ["+rmo.getFrom()+"] - response code [chargeOTP] : " + responseCode);
                                                         }catch(IOException e){
-                                                            System.err.println("ConsumerSaveLog - LogicApp - code 01 : " + e);
+                                                            System.err.println("ConsumerSaveLog - LogicApp - code 02 : " + e);
                                                         }
-                                                    }else{
-                                                        // put data on Q-OtherMsg
-                                                        qHandler.InsertToOtherMsgQueue(rmo);
                                                     }
-                                                }else{
-                                                    // put data on Q-OtherMsg
-                                                    qHandler.InsertToOtherMsgQueue(rmo);
                                                 }
                                             }catch(Exception e){
                                                 // put data on Q-OtherMsg
