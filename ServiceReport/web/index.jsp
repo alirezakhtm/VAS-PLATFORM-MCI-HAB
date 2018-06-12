@@ -57,11 +57,26 @@
             <% 
                 if(Security.accessLevel == 0){ 
             %>
-                <form class="form-inline" action="Search">
-                    <label for="phone">Phone:</label>
-                    <input type="tel" class="form-control" id="phone" placeholder="91********" name="phone">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </form>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form class="form-group" action="Search">
+                            <label for="phone">Phone:</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="91********" name="phone">
+                            <br/>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <form class="form-group" action="CustomerCharge" method="post">
+                            <label for="dateRegister">Date of Register:</label>
+                            <input type="date" class="form-control" id="dateRegister" placeholder="2018-01-01" name="dateRegister">
+                            <label for="dateCharge">Date of Charge:</label>
+                            <input type="date" class="form-control" id="dateRegister" placeholder="2018-01-01" name="dateCharge">
+                            <br/>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </form>
+                    </div>
+                </div>
             <%
                 }
             %>

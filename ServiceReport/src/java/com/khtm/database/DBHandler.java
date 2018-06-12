@@ -272,4 +272,51 @@ public class DBHandler {
         }
         return lst;
     }
+    
+    public List<NotificationObj> getUserChargedInDate(String dateSub, String dateCharge){
+        List<NotificationObj> lst = new ArrayList<>();
+        try{
+            String strQuery = "select * from `mci_hub_db`.`tbl_notification_log`"
+                    + " where `from` in "
+                    + "(select `msisdn` from `mci_hub_db`.`tbl_serviceusers`"
+                    + " where `MembershipDate` like '%"+dateSub+"%' and `ServiceCode`='1')"
+                    + " and `to`='405571' and `text`='Renewal' and `receiveDate` like '%"+dateCharge+"%'";
+            stm = conn.createStatement();
+            rst = stm.executeQuery(strQuery);
+            while(rst.next()){
+                NotificationObj notificationObj = new NotificationObj();
+                notificationObj.setChannel(rst.getString("channel"));
+                notificationObj.setFrom(rst.getString("from"));
+                notificationObj.setKeyword(rst.getString("keyword"));
+                notificationObj.setNotificationId(rst.getString("notificationId"));
+                notificationObj.setReceiveDate(rst.getString("receiveDate"));
+                notificationObj.setText(rst.getString("text"));
+                notificationObj.setTo(rst.getString("to"));
+                notificationObj.setUserId(rst.getString("userId"));
+                lst.add(notificationObj);
+            }
+        }catch(SQLException e){
+            System.err.println("[*] ERROR - DBHandler/getUserChargeInDate : " + e);
+        }
+        return lst;
+    }
+    
+    public int getUserChargedInDateNumber(String dateSub, String dateCharge){
+        int ans = 0;
+        try{
+            String strQuery = "select count(*) from `mci_hub_db`.`tbl_notification_log`"
+                    + " where `from` in "
+                    + "(select `msisdn` from `mci_hub_db`.`tbl_serviceusers`"
+                    + " where `MembershipDate` like '%"+dateSub+"%' and `ServiceCode`='1')"
+                    + " and `to`='405571' and `text`='Renewal' and `receiveDate` like '%"+dateCharge+"%'";
+            stm = conn.createStatement();
+            rst = stm.executeQuery(strQuery);
+            while(rst.next()){
+                ans = rst.getInt(1);
+            }
+        }catch(SQLException e){
+            System.err.println("[*] ERROR - DBHandler/getUserChargedInDateNumber : " + e);
+        }
+        return ans;
+    }
 }

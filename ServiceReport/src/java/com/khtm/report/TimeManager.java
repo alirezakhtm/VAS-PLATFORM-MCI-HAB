@@ -19,8 +19,8 @@ public class TimeManager {
         Calendar cal = Calendar.getInstance();
         String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime());
         cal.set(Calendar.YEAR, 2018);
-        cal.set(Calendar.MONTH, 4);
-        cal.set(Calendar.DAY_OF_MONTH, 19);
+        cal.set(Calendar.MONTH, 5);
+        cal.set(Calendar.DAY_OF_MONTH, 9);
         List<String> lst = new LinkedList<>();
         while(!currentDate.equals(new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime()))){
             cal.add(Calendar.DAY_OF_YEAR, 1);

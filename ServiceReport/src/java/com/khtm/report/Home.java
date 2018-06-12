@@ -74,8 +74,8 @@ public class Home extends HttpServlet {
             }else{
                 strTable += "<tr>\n" +
     "                        <td>"+t.getDate()+"</td>\n" +
-    "                        <td>"+t.getSubNO()+"</td>\n" +
-    "                        <td>"+t.getUnsubNO()+"</td>\n" +
+    "                        <td><a href=\"Report?action=unsubuser&date="+t.getDate()+"\">"+t.getUnsubNO()+"</a></td>\n" +
+    "                        <td><a href=\"Report?action=baduser&date="+t.getDate()+"\">"+t.getBadUserNO()+"</a></td>\n" +
     "                    </tr>\n";
             }
         }

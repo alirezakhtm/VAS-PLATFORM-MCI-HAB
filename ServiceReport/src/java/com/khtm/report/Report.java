@@ -44,7 +44,7 @@ public class Report extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if(Security.accessLevel == 0){
+        //if(Security.accessLevel == 0){
             String date = request.getParameter("date");
             String action = request.getParameter("action");
             switch(action){
@@ -60,7 +60,7 @@ public class Report extends HttpServlet {
                     String dataFile = "ServiceCode,MSISDN,SubStatus,MembershipDate,"
                             + "UnSubscribeDate,selectedCategoryIndx,unsubscribedBy,subscribedBy,numberType\n";
                     for(ServiceUserObj suo : lst){
-                        dataFile += suo.getServiceCode()+","+suo.getMsisdn()+","+suo.getSubStatus()+","+suo.getMembershipDate()+","
+                        dataFile += suo.getServiceCode()+","+suo.getMsisdn().substring(0,suo.getMsisdn().length()-5)+"****,"+suo.getSubStatus()+","+suo.getMembershipDate()+","
                             + suo.getUnsubDate() +","+suo.getSelctedCategoryIndex()+","+suo.getUnsubBy()+","+suo.getSubBy()+","+suo.getNumberType()+"\n";
                     }
                     bw.write(dataFile);
@@ -90,7 +90,7 @@ public class Report extends HttpServlet {
                     String dataFile_sub = "ServiceCode,MSISDN,SubStatus,MembershipDate,"
                             + "UnSubscribeDate,selectedCategoryIndx,unsubscribedBy,subscribedBy,numberType\n";
                     for(ServiceUserObj suo : lst_sub){
-                        dataFile_sub += suo.getServiceCode()+","+suo.getMsisdn()+","+suo.getSubStatus()+","+suo.getMembershipDate()+","
+                        dataFile_sub += suo.getServiceCode()+","+suo.getMsisdn().substring(0,suo.getMsisdn().length()-5)+"****,"+suo.getSubStatus()+","+suo.getMembershipDate()+","
                             + suo.getUnsubDate() +","+suo.getSelctedCategoryIndex()+","+suo.getUnsubBy()+","+suo.getSubBy()+","+suo.getNumberType()+"\n";
                     }
                     bw_sub.write(dataFile_sub);
@@ -120,7 +120,7 @@ public class Report extends HttpServlet {
                     String dataFile_unsub = "ServiceCode,MSISDN,SubStatus,MembershipDate,"
                             + "UnSubscribeDate,selectedCategoryIndx,unsubscribedBy,subscribedBy,numberType\n";
                     for(ServiceUserObj suo : lst_unsub){
-                        dataFile_unsub += suo.getServiceCode()+","+suo.getMsisdn()+","+suo.getSubStatus()+","+suo.getMembershipDate()+","
+                        dataFile_unsub += suo.getServiceCode()+","+suo.getMsisdn().substring(0,suo.getMsisdn().length()-5)+"****,"+suo.getSubStatus()+","+suo.getMembershipDate()+","
                             + suo.getUnsubDate() +","+suo.getSelctedCategoryIndex()+","+suo.getUnsubBy()+","+suo.getSubBy()+","+suo.getNumberType()+"\n";
                     }
                     bw_unsub.write(dataFile_unsub);
@@ -150,7 +150,7 @@ public class Report extends HttpServlet {
                     String dataFile_renewal = "Text,Keyword,Channel,From,To,NotificationId,UserId,ReceiveDate\n";
                     for(NotificationObj nfo : lst_renewal){
                         dataFile_renewal += nfo.getText()+","+nfo.getKeyword()+","+nfo.getChannel()
-                                +","+nfo.getFrom()+","+nfo.getTo()+","+nfo.getNotificationId()+","
+                                +","+nfo.getFrom().substring(0,nfo.getFrom().length()-5)+"****,"+nfo.getTo()+","+nfo.getNotificationId()+","
                                 +nfo.getUserId()+","+nfo.getReceiveDate()+"\n";
                     }
                     bw_renewal.write(dataFile_renewal);
@@ -169,10 +169,10 @@ public class Report extends HttpServlet {
                     fileStream_renewal.close();
                     break;
             }
-        }else{
-            RequestDispatcher dispatcher = request.getRequestDispatcher("default.jsp");
-            dispatcher.forward(request, response);
-        }
+        //}else{
+            //RequestDispatcher dispatcher = request.getRequestDispatcher("default.jsp");
+            //dispatcher.forward(request, response);
+        //}
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
