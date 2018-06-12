@@ -61,7 +61,9 @@ public class CustomerCharge extends HttpServlet {
                                 new File(folder +"/report.csv"))));
                 String dataFile = "text,keyword,from,date\n";
                 for(NotificationObj obj : tblNotification){
-                    dataFile += obj.getText() + "," + obj.getKeyword() + "," + obj.getFrom() + "," + obj.getReceiveDate() + "\n";
+                    String msisdn = (new Report()).subMsisdn(obj.getFrom());
+                    dataFile += obj.getText() + "," + obj.getKeyword() + "," 
+                            + msisdn + "," + obj.getReceiveDate() + "\n";
                 }
                 bw.write(dataFile);
                 bw.flush();

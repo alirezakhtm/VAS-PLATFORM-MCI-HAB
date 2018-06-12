@@ -17,6 +17,7 @@ import java.util.List;
  */
 public class NewClass {
     public static void main(String[] args) {
+        /*
         Calendar cal = Calendar.getInstance();
         String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime());
         cal.set(Calendar.YEAR, 2018);
@@ -30,6 +31,12 @@ public class NewClass {
         }
         for(String s : lst){
             System.out.println(">>> " + s);
+        }
+        */
+        String msisdn = "9194018087";
+        String[] str = msisdn.split("|");
+        for(String s : str){
+            System.out.println(">> " + s);
         }
     }
 }
